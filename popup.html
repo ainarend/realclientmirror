@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RealClient Mirror</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 320px;
+      padding: 10px;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .dimension-inputs {
+      display: flex;
+      gap: 10px;
+    }
+    .dimension-inputs input {
+      width: 50%;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #3b78e7;
+    }
+    .sites-list {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+    .site-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .delete-btn {
+      background-color: #ea4335;
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background-color: #d33426;
+    }
+    .site-details {
+      flex-grow: 1;
+    }
+  </style>
+</head>
+<body>
+<h2>RealClient Mirror</h2>
+
+<div class="form-group">
+  <label for="siteUrl">Website URL Pattern:</label>
+  <input type="text" id="siteUrl" placeholder="e.g., example.com or *.example.com">
+</div>
+
+<div class="form-group">
+  <label for="presetDevice">Preset Devices:</label>
+  <select id="presetDevice" class="form-control">
+    <option value="">Custom Size</option>
+    <!-- Educational Devices -->
+    <option value="chromebook-11">Chromebook 11" (1366x768)</option>
+    <option value="chromebook-14">Chromebook 14" (1920x1080)</option>
+    <option value="school-desktop">School Desktop (1280x1024)</option>
+
+    <!-- Tablets -->
+    <option value="ipad-10">iPad 10.2" (1620x2160)</option>
+    <option value="ipad-11">iPad Pro 11" (1668x2388)</option>
+    <option value="android-tablet">Android Tablet (1200x1920)</option>
+
+    <!-- Phones -->
+    <option value="iphone-15">iPhone 15 (390x844)</option>
+    <option value="iphone-15pro">iPhone 15 Pro Max (430x932)</option>
+    <option value="android-phone">Android Phone - Standard (360x800)</option>
+    <option value="android-large">Android Phone - Large (412x915)</option>
+
+    <!-- Desktop Screens -->
+    <option value="desktop-hd">Desktop HD (1920x1080)</option>
+    <option value="desktop-2k">Desktop 2K (2560x1440)</option>
+    <option value="desktop-4k">Desktop 4K (3840x2160)</option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label>Custom Dimensions:</label>
+  <div class="dimension-inputs">
+    <input type="number" id="width" placeholder="Width (px)" min="320" max="3840">
+    <input type="number" id="height" placeholder="Height (px)" min="240" max="2160">
+  </div>
+</div>
+
+<button id="saveBtn">Save Configuration</button>
+
+<div class="sites-list" id="sitesList">
+  <!-- Site configurations will be listed here -->
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

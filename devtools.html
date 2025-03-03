@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RealClient Mirror DevTools</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 10px;
+      font-size: 12px;
+      width: 300px;
+    }
+
+    h1 {
+      font-size: 14px;
+      margin-top: 0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    button:hover {
+      background-color: #3b78e7;
+    }
+
+    .danger {
+      background-color: #ea4335;
+    }
+
+    .danger:hover {
+      background-color: #d33426;
+    }
+
+    .info {
+      padding: 8px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    pre {
+      background-color: #f1f1f1;
+      padding: 8px;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 200px;
+    }
+  </style>
+</head>
+<body>
+<h1>RealClient Mirror DevTools</h1>
+
+<div class="container">
+  <div>
+    <button id="applyCustomResizeBtn">Force Resize Current Tab</button>
+  </div>
+
+  <div>
+    <button id="checkStorageBtn">Check Stored Configurations</button>
+    <pre id="storageOutput"></pre>
+  </div>
+
+  <div>
+    <button id="clearStorageBtn" class="danger">Clear All Configurations</button>
+  </div>
+
+  <div class="info">
+    This panel helps debug the RealClient Mirror extension.
+    If the automatic resizing isn't working, use "Force Resize" to apply it manually.
+  </div>
+</div>
+
+<script src="devtools.js"></script>
+</body>
+</html>
