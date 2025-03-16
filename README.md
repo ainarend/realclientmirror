@@ -3,7 +3,7 @@
 ## Overview
 RealClient Mirror is a Chrome extension that helps web developers and designers test their websites on a variety of device configurations without needing physical devices.
 
-![RealClient Mirror Screenshot](images/screenshot.png)
+![RealClient Mirror Screenshot](images/screenshot.webp)
 
 ## Features
 
