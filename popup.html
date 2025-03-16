@@ -4,122 +4,193 @@
   <title>RealClient Mirror</title>
   <style>
     body {
+      width: 350px;
       font-family: Arial, sans-serif;
-      width: 320px;
-      padding: 10px;
+      padding: 15px;
     }
-    .form-group {
-      margin-bottom: 10px;
+
+    h2 {
+      margin-top: 0;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 10px;
     }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
+
+    .section {
+      margin-bottom: 20px;
     }
-    input, select {
-      width: 100%;
-      padding: 5px;
-      box-sizing: border-box;
-      border-radius: 4px;
+
+    .url-list {
+      max-height: 150px;
+      overflow-y: auto;
       border: 1px solid #ccc;
+      padding: 5px;
+      margin-top: 10px;
     }
-    .dimension-inputs {
+
+    .url-item {
       display: flex;
-      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 5px;
+      border-bottom: 1px solid #eee;
     }
-    .dimension-inputs input {
-      width: 50%;
+
+    .url-item:last-child {
+      border-bottom: none;
     }
+
     button {
       background-color: #4285f4;
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 8px 12px;
       border-radius: 4px;
       cursor: pointer;
-      margin-top: 10px;
-      width: 100%;
     }
+
     button:hover {
-      background-color: #3b78e7;
+      background-color: #3367d6;
     }
-    .sites-list {
-      margin-top: 20px;
-      max-height: 200px;
-      overflow-y: auto;
-      border-top: 1px solid #ccc;
-      padding-top: 10px;
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
     }
-    .site-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px 0;
-      border-bottom: 1px solid #eee;
+
+    input, select {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
     }
-    .delete-btn {
-      background-color: #ea4335;
-      color: white;
-      border: none;
+
+    .profile-editor {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #eee;
+      background-color: #f9f9f9;
+    }
+
+    .input-group {
+      margin-bottom: 8px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 3px;
+      font-weight: bold;
+    }
+
+    .remove-btn {
+      background-color: #db4437;
       padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
+      font-size: 12px;
     }
-    .delete-btn:hover {
-      background-color: #d33426;
+
+    .remove-btn:hover {
+      background-color: #c53929;
     }
-    .site-details {
-      flex-grow: 1;
+
+    .checkbox-group {
+      margin: 10px 0;
+    }
+
+    .info-text {
+      font-style: italic;
+      color: #666;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .pattern-info {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .pattern-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .pattern-profile-select {
+      padding: 4px;
+      font-size: 12px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
 <h2>RealClient Mirror</h2>
 
-<div class="form-group">
-  <label for="siteUrl">Website URL Pattern:</label>
-  <input type="text" id="siteUrl" placeholder="e.g., example.com or *.example.com">
-</div>
+<div class="section">
+  <h3>URL Patterns</h3>
+  <p>Add patterns for URLs where responsive mode should activate:</p>
+  <input type="text" id="url-pattern" placeholder="e.g., example.com or .*\.example\.com">
+  <button id="add-pattern">Add Pattern</button>
 
-<div class="form-group">
-  <label for="presetDevice">Preset Devices:</label>
-  <select id="presetDevice" class="form-control">
-    <option value="">Custom Size</option>
-    <!-- Educational Devices -->
-    <option value="chromebook-11">Chromebook 11" (1366x768)</option>
-    <option value="chromebook-14">Chromebook 14" (1920x1080)</option>
-    <option value="school-desktop">School Desktop (1280x1024)</option>
-
-    <!-- Tablets -->
-    <option value="ipad-10">iPad 10.2" (1620x2160)</option>
-    <option value="ipad-11">iPad Pro 11" (1668x2388)</option>
-    <option value="android-tablet">Android Tablet (1200x1920)</option>
-
-    <!-- Phones -->
-    <option value="iphone-15">iPhone 15 (390x844)</option>
-    <option value="iphone-15pro">iPhone 15 Pro Max (430x932)</option>
-    <option value="android-phone">Android Phone - Standard (360x800)</option>
-    <option value="android-large">Android Phone - Large (412x915)</option>
-
-    <!-- Desktop Screens -->
-    <option value="desktop-hd">Desktop HD (1920x1080)</option>
-    <option value="desktop-2k">Desktop 2K (2560x1440)</option>
-    <option value="desktop-4k">Desktop 4K (3840x2160)</option>
-  </select>
-</div>
-
-<div class="form-group">
-  <label>Custom Dimensions:</label>
-  <div class="dimension-inputs">
-    <input type="number" id="width" placeholder="Width (px)" min="320" max="3840">
-    <input type="number" id="height" placeholder="Height (px)" min="240" max="2160">
+  <div class="url-list" id="pattern-list">
+    <!-- URL patterns will be listed here -->
   </div>
+  <p class="info-text">Use regular expressions or simple domain names</p>
 </div>
 
-<button id="saveBtn">Save Configuration</button>
+<div class="section">
+  <h3>Device Profiles</h3>
+  <select id="profile-select">
+    <!-- Device profiles will be listed here -->
+  </select>
+  <button id="edit-profile">Edit</button>
+  <button id="add-profile">Add New</button>
+  <button id="delete-profile" disabled>Delete</button>
 
-<div class="sites-list" id="sitesList">
-  <!-- Site configurations will be listed here -->
+  <div class="profile-editor" id="profile-editor">
+    <div class="input-group">
+      <label for="profile-name">Profile Name:</label>
+      <input type="text" id="profile-name" placeholder="Profile Name">
+    </div>
+
+    <div class="input-group">
+      <label for="profile-width">Width (px):</label>
+      <input type="number" id="profile-width" placeholder="Width (px)">
+    </div>
+
+    <div class="input-group">
+      <label for="profile-height">Height (px):</label>
+      <input type="number" id="profile-height" placeholder="Height (px)">
+    </div>
+
+    <div class="input-group">
+      <label for="profile-scale">Device Scale Factor:</label>
+      <input type="number" id="profile-scale" placeholder="1.0" step="0.1" min="1" max="4">
+    </div>
+
+    <div class="input-group">
+      <label for="profile-orientation">Orientation:</label>
+      <select id="profile-orientation">
+        <option value="default">Default (as entered)</option>
+        <option value="portrait">Force Portrait</option>
+        <option value="landscape">Force Landscape</option>
+      </select>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="profile-mobile">
+      <label for="profile-mobile">Simulate Mobile Device</label>
+    </div>
+
+    <div class="input-group">
+      <label for="profile-useragent">User Agent (optional):</label>
+      <input type="text" id="profile-useragent" placeholder="Custom user agent string">
+    </div>
+
+    <button id="save-profile">Save Profile</button>
+    <button id="cancel-profile">Cancel</button>
+  </div>
 </div>
 
 <script src="popup.js"></script>

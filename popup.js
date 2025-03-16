@@ -1,168 +1,267 @@
-// Add debugging helper for storage
-function logStoredSites() {
-  chrome.storage.sync.get(['sites'], function(result) {
-    console.log('Currently stored sites:', result.sites || []);
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+
+  // Add URL pattern button
+  document.getElementById('add-pattern').addEventListener('click', () => {
+    const patternInput = document.getElementById('url-pattern');
+    const pattern = patternInput.value.trim();
+    const profileSelect = document.getElementById('profile-select');
+    const selectedProfile = profileSelect.value;
+
+    if (pattern) {
+      chrome.storage.sync.get(['urlPatterns', 'urlProfileMap'], (result) => {
+        const patterns = result.urlPatterns || [];
+        const urlProfileMap = result.urlProfileMap || {};
+        
+        if (!patterns.includes(pattern)) {
+          patterns.push(pattern);
+          // Map this pattern to the currently selected profile
+          urlProfileMap[pattern] = selectedProfile;
+          
+          chrome.storage.sync.set({ 
+            urlPatterns: patterns,
+            urlProfileMap: urlProfileMap 
+          }, () => {
+            patternInput.value = '';
+            updatePatternList();
+          });
+        }
+      });
+    }
   });
-}
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Load saved configurations
-  loadSavedConfigurations();
+  // Profile selector change handler
+  document.getElementById('profile-select').addEventListener('change', () => {
+    document.getElementById('delete-profile').disabled =
+        ['Chromebook', 'iPad', 'iPhone'].includes(document.getElementById('profile-select').value);
+  });
 
-  // Save button click event
-  document.getElementById('saveBtn').addEventListener('click', saveConfiguration);
+  // Edit profile button
+  document.getElementById('edit-profile').addEventListener('click', () => {
+    const profileEditor = document.getElementById('profile-editor');
+    profileEditor.style.display = 'block';
 
-  // Preset device selection change event
-  document.getElementById('presetDevice').addEventListener('change', handlePresetChange);
+    const profileSelect = document.getElementById('profile-select');
+    const selectedProfile = profileSelect.value;
 
-  // Log current storage for debugging (only in console)
-  logStoredSites();
-});
+    chrome.storage.sync.get('deviceProfiles', (result) => {
+      const profiles = result.deviceProfiles || {};
+      const profile = profiles[selectedProfile];
 
-function handlePresetChange() {
-  const presetSelect = document.getElementById('presetDevice');
-  const selectedValue = presetSelect.value;
+      if (profile) {
+        document.getElementById('profile-name').value = selectedProfile;
+        document.getElementById('profile-width').value = profile.width;
+        document.getElementById('profile-height').value = profile.height;
+        document.getElementById('profile-scale').value = profile.deviceScaleFactor || 1;
+        document.getElementById('profile-mobile').checked = profile.mobile || false;
+        document.getElementById('profile-useragent').value = profile.userAgent || '';
 
-  if (selectedValue) {
-    // Dimensions based on selected device
-    const deviceDimensions = {
-      // Educational Devices
-      'chromebook-11': { width: 1366, height: 768 },
-      'chromebook-14': { width: 1920, height: 1080 },
-      'school-desktop': { width: 1280, height: 1024 },
-
-      // Tablets
-      'ipad-10': { width: 1620, height: 2160 },
-      'ipad-11': { width: 1668, height: 2388 },
-      'android-tablet': { width: 1200, height: 1920 },
-
-      // Phones
-      'iphone-15': { width: 390, height: 844 },
-      'iphone-15pro': { width: 430, height: 932 },
-      'android-phone': { width: 360, height: 800 },
-      'android-large': { width: 412, height: 915 },
-
-      // Desktop Screens
-      'desktop-hd': { width: 1920, height: 1080 },
-      'desktop-2k': { width: 2560, height: 1440 },
-      'desktop-4k': { width: 3840, height: 2160 },
-    };
-
-    // Set the input field values
-    if (deviceDimensions[selectedValue]) {
-      document.getElementById('width').value = deviceDimensions[selectedValue].width;
-      document.getElementById('height').value = deviceDimensions[selectedValue].height;
-    }
-  }
-}
-
-function saveConfiguration() {
-  let siteUrl = document.getElementById('siteUrl').value.trim();
-  const width = document.getElementById('width').value;
-  const height = document.getElementById('height').value;
-  const presetDevice = document.getElementById('presetDevice').value;
-
-  // Validation
-  if (!siteUrl) {
-    alert('Please enter a website URL pattern');
-    return;
-  }
-
-  if (!width || !height) {
-    alert('Please enter both width and height');
-    return;
-  }
-
-  // Remove http://, https:// and www. from the URL to simplify matching
-  siteUrl = siteUrl.replace(/^https?:\/\//i, '')
-      .replace(/^www\./i, '');
-
-  console.log('Saving configuration for site URL:', siteUrl);
-
-  // Save configuration
-  chrome.storage.sync.get(['sites'], function(result) {
-    const sites = result.sites || [];
-
-    // Check if site already exists
-    const existingIndex = sites.findIndex(site => site.url === siteUrl);
-
-    // Get the preset name if selected
-    const presetName = document.getElementById('presetDevice').options[
-        document.getElementById('presetDevice').selectedIndex
-        ].text;
-
-    const configToSave = {
-      url: siteUrl,
-      width: parseInt(width),
-      height: parseInt(height),
-      preset: presetDevice ? presetName : 'Custom'
-    };
-
-    if (existingIndex >= 0) {
-      // Update existing site
-      sites[existingIndex] = configToSave;
-    } else {
-      // Add new site
-      sites.push(configToSave);
-    }
-
-    // Save to storage
-    chrome.storage.sync.set({ sites: sites }, function() {
-      // Clear inputs
-      document.getElementById('siteUrl').value = '';
-      document.getElementById('width').value = '';
-      document.getElementById('height').value = '';
-      document.getElementById('presetDevice').value = '';
-
-      // Reload the list
-      loadSavedConfigurations();
+        // Disable profile name field for default profiles
+        const profileNameField = document.getElementById('profile-name');
+        if (['Chromebook', 'iPad', 'iPhone'].includes(selectedProfile)) {
+          profileNameField.disabled = true;
+        } else {
+          profileNameField.disabled = false;
+        }
+      }
     });
   });
-}
 
-function loadSavedConfigurations() {
-  const sitesList = document.getElementById('sitesList');
-  sitesList.innerHTML = '';
+  // Add new profile button
+  document.getElementById('add-profile').addEventListener('click', () => {
+    const profileEditor = document.getElementById('profile-editor');
+    profileEditor.style.display = 'block';
 
-  chrome.storage.sync.get(['sites'], function(result) {
-    const sites = result.sites || [];
+    // Clear and enable all fields
+    document.getElementById('profile-name').value = '';
+    document.getElementById('profile-name').disabled = false;
+    document.getElementById('profile-width').value = '';
+    document.getElementById('profile-height').value = '';
+    document.getElementById('profile-scale').value = '1';
+    document.getElementById('profile-mobile').checked = false;
+    document.getElementById('profile-useragent').value = '';
+  });
 
-    if (sites.length === 0) {
-      sitesList.innerHTML = '<p>No configurations saved yet.</p>';
+  // Delete profile button
+  document.getElementById('delete-profile').addEventListener('click', () => {
+    const profileSelect = document.getElementById('profile-select');
+    const selectedProfile = profileSelect.value;
+
+    // Don't allow deletion of default profiles
+    if (['Chromebook', 'iPad', 'iPhone'].includes(selectedProfile)) {
       return;
     }
 
-    sites.forEach(function(site, index) {
-      const siteItem = document.createElement('div');
-      siteItem.className = 'site-item';
+    if (confirm(`Are you sure you want to delete the "${selectedProfile}" profile?`)) {
+      chrome.storage.sync.get('deviceProfiles', (result) => {
+        const profiles = result.deviceProfiles || {};
+        delete profiles[selectedProfile];
 
-      const siteDetails = document.createElement('div');
-      siteDetails.className = 'site-details';
-      // Use standard "x" instead of "×" to avoid encoding issues
-      siteDetails.textContent = `${site.url} (${site.width}x${site.height})${site.preset ? ` - ${site.preset}` : ''}`;
+        chrome.storage.sync.set({ deviceProfiles: profiles }, () => {
+          updateProfileSelect();
+        });
+      });
+    }
+  });
 
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'delete-btn';
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.addEventListener('click', function() {
-        deleteSite(index);
+  // Cancel profile editing
+  document.getElementById('cancel-profile').addEventListener('click', () => {
+    document.getElementById('profile-editor').style.display = 'none';
+  });
+
+  // Save profile button
+  document.getElementById('save-profile').addEventListener('click', () => {
+    const profileName = document.getElementById('profile-name').value.trim();
+    const width = parseInt(document.getElementById('profile-width').value);
+    const height = parseInt(document.getElementById('profile-height').value);
+    const scale = parseFloat(document.getElementById('profile-scale').value) || 1;
+    const mobile = document.getElementById('profile-mobile').checked;
+    const userAgent = document.getElementById('profile-useragent').value.trim();
+    const orientation = document.getElementById('profile-orientation').value;
+
+    if (profileName && width && height) {
+      chrome.storage.sync.get('deviceProfiles', (result) => {
+        const profiles = result.deviceProfiles || {};
+        
+        // Apply orientation if needed
+        let finalWidth = width;
+        let finalHeight = height;
+        if (orientation === 'landscape' && width < height) {
+          // Swap dimensions for landscape
+          finalWidth = height;
+          finalHeight = width;
+        } else if (orientation === 'portrait' && width > height) {
+          // Swap dimensions for portrait
+          finalWidth = height;
+          finalHeight = width;
+        }
+        
+        // Save the profile
+        profiles[profileName] = {
+          width: finalWidth,
+          height: finalHeight,
+          deviceScaleFactor: scale,
+          mobile: mobile,
+          userAgent: userAgent || undefined
+        };
+        
+        chrome.storage.sync.set({ deviceProfiles: profiles }, () => {
+          document.getElementById('profile-editor').style.display = 'none';
+          updateProfileSelect();
+        });
+      });
+    }
+  });
+});
+
+function loadSettings() {
+  updatePatternList();
+  updateProfileSelect();
+}
+
+function updatePatternList() {
+  const patternList = document.getElementById('pattern-list');
+  patternList.innerHTML = '';
+
+  chrome.storage.sync.get(['urlPatterns', 'urlProfileMap', 'deviceProfiles'], (result) => {
+    const patterns = result.urlPatterns || [];
+    const urlProfileMap = result.urlProfileMap || {};
+    const profiles = result.deviceProfiles || {};
+
+    if (patterns.length === 0) {
+      patternList.innerHTML = '<p>No patterns added yet.</p>';
+      return;
+    }
+
+    patterns.forEach(pattern => {
+      const item = document.createElement('div');
+      item.className = 'url-item';
+
+      // Create pattern text
+      const patternText = document.createElement('span');
+      patternText.textContent = pattern;
+      
+      // Create profile selector for this pattern
+      const profileSelector = document.createElement('select');
+      profileSelector.className = 'pattern-profile-select';
+      profileSelector.dataset.pattern = pattern;
+      
+      // Add options for each profile
+      Object.keys(profiles).forEach(profileName => {
+        const option = document.createElement('option');
+        option.value = profileName;
+        option.textContent = profileName;
+        if (urlProfileMap[pattern] === profileName) {
+          option.selected = true;
+        }
+        profileSelector.appendChild(option);
+      });
+      
+      // Handle profile change for this pattern
+      profileSelector.addEventListener('change', () => {
+        chrome.storage.sync.get('urlProfileMap', (result) => {
+          const urlProfileMap = result.urlProfileMap || {};
+          urlProfileMap[pattern] = profileSelector.value;
+          chrome.storage.sync.set({ urlProfileMap });
+        });
       });
 
-      siteItem.appendChild(siteDetails);
-      siteItem.appendChild(deleteBtn);
-      sitesList.appendChild(siteItem);
+      // Create remove button
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = 'Remove';
+      removeBtn.addEventListener('click', () => {
+        chrome.storage.sync.get(['urlPatterns', 'urlProfileMap'], (result) => {
+          const currentPatterns = result.urlPatterns || [];
+          const currentMap = result.urlProfileMap || {};
+          
+          // Remove pattern from list and mapping
+          const updatedPatterns = currentPatterns.filter(p => p !== pattern);
+          delete currentMap[pattern];
+          
+          chrome.storage.sync.set({ 
+            urlPatterns: updatedPatterns,
+            urlProfileMap: currentMap
+          }, () => {
+            updatePatternList();
+          });
+        });
+      });
+
+      // Add elements to item
+      const patternInfo = document.createElement('div');
+      patternInfo.className = 'pattern-info';
+      patternInfo.appendChild(patternText);
+      
+      const controls = document.createElement('div');
+      controls.className = 'pattern-controls';
+      controls.appendChild(profileSelector);
+      controls.appendChild(removeBtn);
+      
+      item.appendChild(patternInfo);
+      item.appendChild(controls);
+      patternList.appendChild(item);
     });
   });
 }
 
-function deleteSite(index) {
-  chrome.storage.sync.get(['sites'], function(result) {
-    const sites = result.sites || [];
+function updateProfileSelect() {
+  const profileSelect = document.getElementById('profile-select');
+  profileSelect.innerHTML = '';
 
-    sites.splice(index, 1);
+  chrome.storage.sync.get('deviceProfiles', (result) => {
+    const profiles = result.deviceProfiles || {};
 
-    chrome.storage.sync.set({ sites: sites }, function() {
-      loadSavedConfigurations();
+    Object.keys(profiles).forEach(profile => {
+      const option = document.createElement('option');
+      option.value = profile;
+      // Use proper multiplication symbol for display
+      option.textContent = `${profile} (${profiles[profile].width} x ${profiles[profile].height})`;
+      profileSelect.appendChild(option);
     });
+
+    // Update delete button state
+    document.getElementById('delete-profile').disabled =
+        ['Chromebook', 'iPad', 'iPhone'].includes(profileSelect.value);
   });
 }
